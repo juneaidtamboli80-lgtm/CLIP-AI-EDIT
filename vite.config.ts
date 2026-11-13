@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/clip-ai-edit/'
+  base: '/CLIP-AI-EDIT/'
 })
