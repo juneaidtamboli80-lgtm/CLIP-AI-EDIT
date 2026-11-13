@@ -1,0 +1,91 @@
+name: clipforge
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: clipforge
+      POSTGRES_PASSWORD: clipforge
+      POSTGRES_DB: clipforge
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clipforge -d clipforge"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "false"
+      DATABASE_URL: postgresql+psycopg://clipforge:clipforge@db:5432/clipforge
+      REDIS_URL: redis://redis:6379/0
+      STORAGE_BACKEND: local
+      STORAGE_ROOT: /data/storage
+      STORAGE_PUBLIC_URL: http://localhost:8000/media
+      CORS_ORIGINS: http://localhost:3000
+      CELERY_TASK_ALWAYS_EAGER: "false"
+      SIMULATION_MODE: "true"
+      SEED_DEMO_DATA: "true"
+    volumes:
+      - media-data:/data
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build: ./backend
+    command: ["celery", "-A", "app.workers.celery_app.celery_app", "worker", "--loglevel=info", "--concurrency=2"]
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+psycopg://clipforge:clipforge@db:5432/clipforge
+      REDIS_URL: redis://redis:6379/0
+      STORAGE_BACKEND: local
+      STORAGE_ROOT: /data/storage
+      STORAGE_PUBLIC_URL: http://localhost:8000/media
+      CELERY_TASK_ALWAYS_EAGER: "false"
+      SIMULATION_MODE: "true"
+      SEED_DEMO_DATA: "false"
+    volumes:
+      - media-data:/data
+    depends_on:
+      api:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+        NEXT_PUBLIC_USE_MOCK: "true"
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_started
+
+volumes:
+  pg-data:
+  redis-data:
+  media-data:

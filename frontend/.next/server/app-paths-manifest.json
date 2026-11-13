@@ -1,0 +1,13 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/editor/[clipId]/page": "app/editor/[clipId]/page.js",
+  "/icon.svg/route": "app/icon.svg/route.js",
+  "/page": "app/page.js",
+  "/(app)/brand-kit/page": "app/(app)/brand-kit/page.js",
+  "/(app)/settings/page": "app/(app)/settings/page.js",
+  "/(app)/projects/page": "app/(app)/projects/page.js",
+  "/(app)/templates/page": "app/(app)/templates/page.js",
+  "/(app)/new/page": "app/(app)/new/page.js",
+  "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
+  "/(app)/projects/[id]/page": "app/(app)/projects/[id]/page.js"
+}

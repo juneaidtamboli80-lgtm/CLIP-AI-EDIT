@@ -1,0 +1,6 @@
+# AI / media dependencies — Phase 2+ only. These are heavy (Torch, Whisper).
+# Install with: pip install -r requirements-ai.txt
+yt-dlp>=2025.1.15
+faster-whisper>=1.1.0
+openai>=1.59.0
+ffmpeg-python>=0.2.0
